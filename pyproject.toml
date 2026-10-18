@@ -1,0 +1,33 @@
+[project]
+name = "ha-ecowitt-atomic"
+version = "0.1.1.dev0"
+description = "Local Ecowitt gateway readings for Home Assistant"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14.2,<3.15"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "homeassistant==2026.10.2",
+  "pyotp==2.10.0",
+  "pyqrcode==1.2.1",
+  "pytest-homeassistant-custom-component==0.13.373",
+  "ruff>=0.14",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[tool.ruff]
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["homeassistant"]

@@ -1,0 +1,48 @@
+{
+  "title": "Ecowitt Atomic",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect an Ecowitt gateway",
+        "description": "Enter your gateway's IP address, hostname, or base URL.",
+        "data": {
+          "base_url": "Gateway address"
+        }
+      },
+      "reconfigure": {
+        "title": "Change gateway address",
+        "description": "Enter the new address of this gateway. Its MAC address must match the configured gateway.",
+        "data": {
+          "base_url": "Gateway address"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Enter a valid HTTP or HTTPS gateway address without credentials, a path, or a query.",
+      "cannot_connect": "Could not read the gateway. Check its address and local HTTP API support.",
+      "unsupported_gateway": "This first version supports the verified GW2000A gateway model.",
+      "no_readings": "The gateway did not return any valid internal readings."
+    },
+    "abort": {
+      "already_configured": "This gateway is already configured.",
+      "wrong_gateway": "This address belongs to a different gateway. Enter an address for the original gateway.",
+      "reconfigure_successful": "The gateway address has been updated."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "indoor_temperature": {
+        "name": "Indoor temperature"
+      },
+      "indoor_humidity": {
+        "name": "Indoor humidity"
+      },
+      "absolute_pressure": {
+        "name": "Absolute pressure"
+      },
+      "relative_pressure": {
+        "name": "Relative pressure"
+      }
+    }
+  }
+}
