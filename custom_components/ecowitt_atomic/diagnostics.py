@@ -11,7 +11,7 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: AtomicConfigEntry
 ) -> dict[str, Any]:
     """Expose setup state and available runtime details without connection data."""
-    data = getattr(entry, "runtime_data", None)
+    data = entry.runtime_data
     if data is None:
         return {"state": entry.state.value, "readings": {}}
     return {
