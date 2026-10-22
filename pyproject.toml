@@ -1,0 +1,81 @@
+[project]
+name = "ha-ecowitt-atomic"
+version = "0.1.1.dev0"
+description = "Local Ecowitt gateway readings for Home Assistant"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14.5,<3.15"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "homeassistant==2026.10.2",
+  "mypy>=2.4.0",
+  "pyotp==2.10.0",
+  "pyqrcode==1.2.1",
+  "pytest-homeassistant-custom-component==0.13.373",
+  "ruff>=0.14",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "--strict-markers"
+
+[tool.ruff]
+target-version = "py314"
+src = ["custom_components/ecowitt_atomic"]
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "ANN401",
+  "D202", "D203", "D213", "D404", "D406", "D407", "D411",
+  "TID252", "E731",
+  "COM812", "COM819", "D206", "E501", "ISC001",
+  "Q000", "Q001", "Q002", "Q003", "W191", "RUF012",
+  "INP001",
+  "ERA001", "FBT001", "FBT002", "RUF001", "S101", "TC001", "TC006",
+  "TD002", "TD003", "TRY400", "PLR0913", "CPY001",
+  "ANN001", "ANN201", "ANN202", "ANN204", "EM101", "EM102", "PLR2004",
+  "PTH103", "PTH104", "PTH118", "PTH120", "PTH123", "PYI041",
+  "RET504", "RET505", "SIM102", "TC003", "TRY003", "TRY004", "TRY300",
+  "PLR0917",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["TC002"]
+"scripts/*.py" = ["T201"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25
+
+[tool.ruff.lint.isort]
+section-order = [
+  "future", "standard-library", "third-party", "first-party", "local-folder",
+]
+known-first-party = ["homeassistant"]
+combine-as-imports = true
+force-sort-within-sections = true
+force-single-line = false
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"homeassistant.helpers.area_registry" = "ar"
+"homeassistant.helpers.config_validation" = "cv"
+"homeassistant.helpers.device_registry" = "dr"
+"homeassistant.helpers.entity_registry" = "er"
+"homeassistant.helpers.issue_registry" = "ir"
+voluptuous = "vol"
+
+[tool.mypy]
+python_version = "3.14"
+platform = "linux"
+follow_imports = "normal"
+strict = true
+disallow_any_explicit = true

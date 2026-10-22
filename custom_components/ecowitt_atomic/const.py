@@ -1,0 +1,18 @@
+"""Constants for Ecowitt Atomic."""
+
+from datetime import timedelta
+import logging
+
+DOMAIN = "ecowitt_atomic"
+CONF_BASE_URL = "base_url"
+CONF_MAC = "mac"
+POLL_INTERVAL = timedelta(seconds=30)
+REQUEST_TIMEOUT = 10
+SOIL_MOISTURE = "soil_moisture"
+TEMPERATURE = "temperature"
+HUMIDITY = "humidity"
+GATEWAY_NAME = "gateway_name"
+RADIO_ID = "radio_id"
+BATTERY = "battery"
+RSSI = "rssi"
+LOGGER = logging.getLogger(__package__)
