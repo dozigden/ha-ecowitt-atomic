@@ -16,6 +16,13 @@ directory is excluded from Git; keep shared project notes free of those details.
 
 ## Confirmed direction
 
+- Shared outdoor, derived, wind and rain observations belong to the gateway
+  device. Their entity identities must remain stable when the gateway changes
+  physical source. Directly attributable readings and registration diagnostics
+  remain on the individual devices. This decision supersedes earlier proposals
+  to assign aggregated observations using physical-source priority resolvers.
+  Conventional and piezo rain remain distinct streams because the API supplies
+  separate totals.
 - This is an unreleased development project. Do not build migrations or backward
   compatibility for earlier development states. The dedicated HA development
   instance is disposable and can be recreated for breaking changes. Revisit
@@ -265,6 +272,63 @@ directory is excluded from Git; keep shared project notes free of those details.
   alone does not establish selection rules when multiple candidates coexist.
 - No wind/rain entity mappings added. Raw responses and exact readings remain in
   the timestamped local capture linked from the infrastructure notes.
+
+## Frontend source-selection inspection — 2026-10-22
+
+- The user confirmed WH26 ownership in their setup; the unresolved question is
+  attribution in other combinations of Ecowitt sensors. Investigate available
+  evidence without contacting Ecowitt.
+- Inspected the GW2000A V3.3.2 frontend served by the gateway: device settings,
+  calibration, rain totals, registrations, live data, units, weather services,
+  network settings and shared JavaScript. Saved timestamped assets and read-only
+  API responses locally; no gateway settings were changed.
+- `liveData.html` renders `common_list` from `get_livedata_info` directly, using
+  measurement IDs for labels. It does not join registrations or resolve owners.
+  Conventional `rain` and `piezoRain` are displayed separately. The frontend
+  supplies no temperature/wind source-priority algorithm.
+- `get_rain_totals` exposes `rainFallPriority` and a `list` defining `0` as
+  No rain gauge, `1` as Traditional rain gauge, and `2` as Piezoelectric rain
+  gauge. This is a category-level setting, not a radio ID or registration type.
+  It does not establish selection between multiple Ecowitt sensors within a
+  category, failover behaviour, or physical ownership of accumulated totals.
+- `get_device_info.sensorType` controls a checkbox labelled for WH24 transmitters
+  (`0` checked, `1` unchecked). It is not a per-measurement active-source field.
+  Calibration exposes common offsets/gains and channel-page availability, with
+  no ownership link. Captured registrations have no explicit selected-source flag.
+- Result: no generic physical-owner resolver established by this inspection.
+  Evidence and file/line references are in the local infrastructure notes.
+
+## Shared gateway observations — 2026-10-22
+
+- Added declarative gateway mappings for outdoor temperature/humidity, dew point,
+  Feels Like, Apparent temperature, VPD, wind speed/gust/day maximum and current/
+  ten-minute-average direction. Conventional `rain` and `piezoRain` each map rate,
+  event, hour, 24-hour, day, week, month and year readings to separate gateway keys.
+  Literal IDs preserve the distinction between `3` (Feels Like) and `0x03`
+  (dew point). Duplicate item IDs are rejected within each source group.
+- Mappings use the served GW2000A V3.3.2 frontend and saved captures as
+  references for labels and API groups. Hourly rain uses `0x7D`; the frontend
+  also contains an older `0x0F` label, which is not mapped here.
+- Gateway observations use valid-reading discovery and registry restoration;
+  missing readings become unknown and failed polls unavailable. Source switches
+  and disappeared registrations do not change observation IDs or device ownership.
+  The existing four internal entities retain their setup behaviour.
+- Canonical units are Celsius, percent, kPa, m/s, degrees, mm and mm/h. Rainfall
+  counters follow installed HA Ecowitt conventions: event/calendar counters are
+  total_increasing; rolling hour/24-hour values have no state class. Wind direction
+  uses measurement_angle. Unsupported unit strings supply no reading.
+- New observations are numeric and included in gateway diagnostics. Parsing stays
+  outside the HTTP client; gateway mappings reuse the existing field-reading
+  declarations and parsers. No source-priority algorithm is needed.
+- Wind conversion covers m/s, km/h, mph and knots. The served unit-settings page
+  also offers BFT (Beaufort); that setting is currently unsupported, so wind
+  speed/gust/maximum readings in BFT will be absent or unknown.
+- Validation: all 363 tests, Ruff, strict mypy and metadata/translation checks
+  pass. A disposable real-gateway HA run discovered 18 new gateway observations
+  (85 entities across 14 devices overall), with successful refresh and stable
+  entity identities after reload. Reports are referenced in local infrastructure
+  notes. Subsequently restarted development HA at the user's request and
+  confirmed its HTTP readiness check passes.
 
 ## Integration structure reference
 

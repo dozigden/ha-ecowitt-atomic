@@ -9,7 +9,11 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .capabilities import GATEWAY_SENSOR_DESCRIPTIONS, SENSOR_DESCRIPTIONS
+from .capabilities import (
+    GATEWAY_OBSERVATION_DESCRIPTIONS,
+    GATEWAY_SENSOR_DESCRIPTIONS,
+    SENSOR_DESCRIPTIONS,
+)
 from .const import DOMAIN
 from .coordinator import GatewayCoordinator
 from .data import AtomicConfigEntry
@@ -35,10 +39,17 @@ async def async_setup_entry(
     registry = er.async_get(hass)
     mac = entry.runtime_data.info.mac
     restored: set[tuple[int, str]] = set()
+    restored_gateway: set[str] = set()
     for registered in er.async_entries_for_config_entry(registry, entry.entry_id):
         if registered.domain != "sensor" or registered.platform != DOMAIN:
             continue
         parts = registered.unique_id.split("::")
+        if (
+            len(parts) == 2
+            and parts[0] == mac
+            and parts[1] in GATEWAY_OBSERVATION_DESCRIPTIONS
+        ):
+            restored_gateway.add(parts[1])
         if (
             len(parts) == 3
             and parts[0] == mac
@@ -49,12 +60,22 @@ async def async_setup_entry(
             restored.add((int(parts[1]), parts[2]))
 
     added: set[tuple[int, str]] = set()
+    added_gateway: set[str] = set()
 
     @callback
     def discover() -> None:
         coordinator = entry.runtime_data.coordinator
         if not coordinator.last_update_success:
             return
+        gateway_keys = restored_gateway | (
+            coordinator.data.gateway.keys() & GATEWAY_OBSERVATION_DESCRIPTIONS.keys()
+        )
+        new_gateway_keys = gateway_keys - added_gateway
+        added_gateway.update(new_gateway_keys)
+        async_add_entities(
+            GatewaySensor(entry, GATEWAY_OBSERVATION_DESCRIPTIONS[key])
+            for key in sorted(new_gateway_keys)
+        )
         discovered = set(restored)
         for slot, ecowitt_sensor in coordinator.data.ecowitt_sensors.items():
             discovered.update(
@@ -76,7 +97,7 @@ async def async_setup_entry(
 
 
 class GatewaySensor(GatewayEntity, SensorEntity):
-    """Sensor for a gateway-internal reading."""
+    """Sensor for an internal reading or shared gateway observation."""
 
     def __init__(
         self, entry: AtomicConfigEntry, description: SensorEntityDescription

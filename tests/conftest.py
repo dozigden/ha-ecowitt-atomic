@@ -37,7 +37,7 @@ def live_payload():
                 "rel": "1005.0 hPa",
             }
         ],
-        "common_list": [{"id": "0x02", "val": "8.0", "unit": "C"}],
+        "common_list": [],
         "ch_aisle": [{"channel": "1", "temp": "12.0", "humidity": "90%"}],
     }
 

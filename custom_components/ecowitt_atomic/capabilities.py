@@ -8,11 +8,15 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    DEGREE,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     EntityCategory,
+    UnitOfPrecipitationDepth,
     UnitOfPressure,
+    UnitOfSpeed,
     UnitOfTemperature,
+    UnitOfVolumetricFlux,
 )
 
 from .const import (
@@ -127,6 +131,92 @@ SENSOR_DESCRIPTIONS = {
             key=RADIO_ID,
             translation_key="radio_id",
             entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+    )
+}
+
+
+GATEWAY_OBSERVATION_DESCRIPTIONS = {
+    description.key: description
+    for description in (
+        *(
+            SensorEntityDescription(
+                key=key,
+                translation_key=key,
+                device_class=SensorDeviceClass.TEMPERATURE,
+                native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                state_class=SensorStateClass.MEASUREMENT,
+                suggested_display_precision=1,
+            )
+            for key in (
+                "outdoor_temperature",
+                "dew_point",
+                "feels_like",
+                "apparent_temperature",
+            )
+        ),
+        SensorEntityDescription(
+            key="outdoor_humidity",
+            translation_key="outdoor_humidity",
+            device_class=SensorDeviceClass.HUMIDITY,
+            native_unit_of_measurement=PERCENTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=0,
+        ),
+        SensorEntityDescription(
+            key="vpd",
+            translation_key="vpd",
+            device_class=SensorDeviceClass.PRESSURE,
+            native_unit_of_measurement=UnitOfPressure.KPA,
+            state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=3,
+        ),
+        *(
+            SensorEntityDescription(
+                key=key,
+                translation_key=key,
+                device_class=SensorDeviceClass.WIND_SPEED,
+                native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
+                state_class=SensorStateClass.MEASUREMENT,
+                suggested_display_precision=1,
+            )
+            for key in ("wind_speed", "wind_gust", "wind_daily_maximum")
+        ),
+        *(
+            SensorEntityDescription(
+                key=key,
+                translation_key=key,
+                device_class=SensorDeviceClass.WIND_DIRECTION,
+                native_unit_of_measurement=DEGREE,
+                state_class=SensorStateClass.MEASUREMENT_ANGLE,
+                suggested_display_precision=0,
+            )
+            for key in ("wind_direction", "wind_direction_10_minute_average")
+        ),
+        *(
+            SensorEntityDescription(
+                key=f"{prefix}_rate",
+                translation_key=f"{prefix}_rate",
+                device_class=SensorDeviceClass.PRECIPITATION_INTENSITY,
+                native_unit_of_measurement=UnitOfVolumetricFlux.MILLIMETERS_PER_HOUR,
+                state_class=SensorStateClass.MEASUREMENT,
+                suggested_display_precision=1,
+            )
+            for prefix in ("rain", "piezo_rain")
+        ),
+        *(
+            SensorEntityDescription(
+                key=f"{prefix}_{period}",
+                translation_key=f"{prefix}_{period}",
+                device_class=SensorDeviceClass.PRECIPITATION,
+                native_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
+                state_class=None
+                if period in {"hour", "24_hours"}
+                else SensorStateClass.TOTAL_INCREASING,
+                suggested_display_precision=1,
+            )
+            for prefix in ("rain", "piezo_rain")
+            for period in ("event", "hour", "24_hours", "day", "week", "month", "year")
         ),
     )
 }

@@ -21,7 +21,7 @@
       "invalid_url": "Enter a valid HTTP or HTTPS gateway address without credentials, a path, or a query.",
       "cannot_connect": "Could not read the gateway. Check its address and local HTTP API support.",
       "unsupported_gateway": "This first version supports the verified GW2000A gateway model.",
-      "no_readings": "The gateway did not return any valid internal readings."
+      "no_readings": "The gateway did not return any valid gateway readings."
     },
     "abort": {
       "already_configured": "This gateway is already configured.",
@@ -63,6 +63,87 @@
       },
       "rssi": {
         "name": "RSSI"
+      },
+      "outdoor_temperature": {
+        "name": "Outdoor temperature"
+      },
+      "outdoor_humidity": {
+        "name": "Outdoor humidity"
+      },
+      "dew_point": {
+        "name": "Dew point"
+      },
+      "feels_like": {
+        "name": "Feels like"
+      },
+      "apparent_temperature": {
+        "name": "Apparent temperature"
+      },
+      "vpd": {
+        "name": "Vapour pressure deficit"
+      },
+      "wind_speed": {
+        "name": "Wind speed"
+      },
+      "wind_gust": {
+        "name": "Wind gust"
+      },
+      "wind_daily_maximum": {
+        "name": "Wind daily maximum"
+      },
+      "wind_direction": {
+        "name": "Wind direction"
+      },
+      "wind_direction_10_minute_average": {
+        "name": "Wind direction 10-minute average"
+      },
+      "rain_rate": {
+        "name": "Rain rate"
+      },
+      "rain_event": {
+        "name": "Rain event"
+      },
+      "rain_hour": {
+        "name": "Rain last hour"
+      },
+      "rain_24_hours": {
+        "name": "Rain last 24 hours"
+      },
+      "rain_day": {
+        "name": "Rain today"
+      },
+      "rain_week": {
+        "name": "Rain this week"
+      },
+      "rain_month": {
+        "name": "Rain this month"
+      },
+      "rain_year": {
+        "name": "Rain this year"
+      },
+      "piezo_rain_rate": {
+        "name": "Piezo rain rate"
+      },
+      "piezo_rain_event": {
+        "name": "Piezo rain event"
+      },
+      "piezo_rain_hour": {
+        "name": "Piezo rain last hour"
+      },
+      "piezo_rain_24_hours": {
+        "name": "Piezo rain last 24 hours"
+      },
+      "piezo_rain_day": {
+        "name": "Piezo rain today"
+      },
+      "piezo_rain_week": {
+        "name": "Piezo rain this week"
+      },
+      "piezo_rain_month": {
+        "name": "Piezo rain this month"
+      },
+      "piezo_rain_year": {
+        "name": "Piezo rain this year"
       }
     }
   }

@@ -34,8 +34,10 @@
   channel to channel metadata to registered radio ID. Where those links are
   absent, documented registration-type mappings may establish ownership once
   verified for the supported gateway. Type does not prescribe capabilities.
-  Keep source-selection rules separate for aggregated readings; skip ambiguous
-  ownership rather than guessing from registration presence, model, image or name.
+  Shared/aggregated weather observations belong to the gateway device, with stable
+  entity identities across physical-source changes. Keep conventional and piezo
+  rain streams distinct. Do not infer physical ownership from registration
+  presence, model, image or name.
 - Create devices directly from registered Ecowitt sensor identities, even before
   any recognised readings arrive. Entity discovery must not gate device creation.
 - Discover all valid registered Ecowitt sensors, regardless of `img` or model.

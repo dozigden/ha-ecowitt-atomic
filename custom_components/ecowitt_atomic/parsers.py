@@ -73,6 +73,49 @@ def parse_rssi(value: object) -> Reading | None:
     return Reading(number, "dBm") if number is not None else None
 
 
+def _quantity(value: object, factors: Mapping[str, float], unit: str) -> Reading | None:
+    """Convert a nonnegative value with an embedded unit."""
+    if not isinstance(value, str):
+        return None
+    match = re.fullmatch(r"\s*([+-]?\d+(?:\.\d+)?)\s*([^\s]+)\s*", value)
+    if match is None:
+        return None
+    number = _number(match[1])
+    factor = factors.get(match[2].lower())
+    if number is None or number < 0 or factor is None:
+        return None
+    converted = number * factor
+    return Reading(converted, unit) if math.isfinite(converted) else None
+
+
+def parse_wind_speed(value: object) -> Reading | None:
+    """Convert wind speed to m/s."""
+    return _quantity(
+        value, {"m/s": 1, "km/h": 1 / 3.6, "mph": 0.44704, "knots": 1852 / 3600}, "m/s"
+    )
+
+
+def parse_rain_depth(value: object) -> Reading | None:
+    """Convert rainfall depth to mm."""
+    return _quantity(value, {"mm": 1, "in": 25.4}, "mm")
+
+
+def parse_rain_rate(value: object) -> Reading | None:
+    """Convert rainfall rate to mm/h."""
+    return _quantity(value, {"mm/hr": 1, "in/hr": 25.4}, "mm/h")
+
+
+def parse_vpd(value: object) -> Reading | None:
+    """Convert vapour pressure deficit to kPa."""
+    return _quantity(value, {"kpa": 1}, "kPa")
+
+
+def parse_wind_direction(value: object) -> Reading | None:
+    """Parse a wind bearing in degrees."""
+    number = _number(value)
+    return Reading(number, "°") if number is not None and 0 <= number <= 360 else None
+
+
 def _integer(value: object) -> int | None:
     """Parse a nonnegative decimal identifier."""
     if isinstance(value, int) and not isinstance(value, bool) and value >= 0:

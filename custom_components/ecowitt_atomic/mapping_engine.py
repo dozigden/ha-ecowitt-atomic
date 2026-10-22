@@ -73,6 +73,37 @@ class MappingRule:
 
 
 @dataclass(frozen=True)
+class GatewayReadingMapping:
+    """One identified observation in a shared gateway group."""
+
+    source: LiveGroup
+    item_id: str
+    reading: FieldReading | UnitFieldReading
+
+
+def apply_gateway_mappings(
+    payload: Mapping[str, object], rules: Sequence[GatewayReadingMapping]
+) -> dict[str, Reading]:
+    """Map shared observations to gateway reading keys."""
+    candidates: dict[str, list[Reading]] = defaultdict(list)
+    for rule in rules:
+        group = payload.get(rule.source.name)
+        if not isinstance(group, list):
+            continue
+        records = [
+            record
+            for record in group
+            if is_json_object(record) and record.get("id") == rule.item_id
+        ]
+        if len(records) != 1:
+            continue
+        reading = rule.reading.parse(records[0])
+        if isinstance(reading, Reading):
+            candidates[rule.reading.key].append(reading)
+    return {key: values[0] for key, values in candidates.items() if len(values) == 1}
+
+
+@dataclass(frozen=True)
 class _Observation:
     """One mapping's proposed reading and device name."""
 

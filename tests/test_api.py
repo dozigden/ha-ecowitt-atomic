@@ -63,6 +63,7 @@ def test_invalid_urls(supplied: str, message: str) -> None:
 
 def test_internal_readings_only(live_payload):
     """Exclude external Ecowitt sensor readings."""
+    live_payload["common_list"] = [{"id": "0x02", "val": "8.0", "unit": "C"}]
     readings = parse_internal_readings(live_payload)
     assert {key: reading.value for key, reading in readings.items()} == {
         "indoor_temperature": 21.5,
