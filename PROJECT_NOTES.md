@@ -1,6 +1,6 @@
 # Ecowitt Atomic — project notes
 
-Last updated: 2026-10-22
+Last updated: 2026-10-23
 
 ## Keeping these notes current
 
@@ -16,6 +16,11 @@ directory is excluded from Git; keep shared project notes free of those details.
 
 ## Confirmed direction
 
+- Project icon source: `assets/icon.svg`, supplied by the user on 2026-10-23.
+  Original 1024 × 1024 SVG with a solid navy background; rendered successfully.
+  Bundled HA brand exports are `brand/icon.png` (256 px) and `brand/icon@2x.png`
+  (512 px) inside the integration. Development HA was restarted and authenticated
+  requests verified both images, plus logo and dark-icon fallbacks.
 - Shared outdoor, derived, wind and rain observations belong to the gateway
   device. Their entity identities must remain stable when the gateway changes
   physical source. Directly attributable readings and registration diagnostics
