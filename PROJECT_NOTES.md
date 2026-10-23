@@ -38,8 +38,12 @@ directory is excluded from Git; keep shared project notes free of those details.
   compatibility when preparing a supported release; see `AGENTS.md`.
 - GitHub Actions runs `scripts/check` on pushes to main, pull requests targeting
   main, and manual dispatch. It uses the project Python pin and locked dependencies.
-  Run the same checks locally; build packages with `scripts/package.py`. Automated
-  releases and HACS publication remain deferred.
+  Run the same checks locally. Packaging happens only in
+  `.github/workflows/release.yml` when a GitHub release is published: it sets the
+  packaged manifest version from the release tag, zips the integration directory,
+  and uploads `ecowitt_atomic.zip` to the release, matching Absolute Humidity.
+  No local packaging script or local ZIP build is needed. HACS publication remains
+  deferred.
 - Keep the development README minimal, retaining "Under development. Do not use."
   On 2026-10-20 the user requested a Mermaid diagram explaining soil moisture
   attribution, with example fields at each endpoint and their HA uses.
@@ -763,8 +767,8 @@ building an expression language or implementing speculative rain attribution.
   configured credentials. A subsequent user-requested rebuild of the main
   development instance also passed actual HTTP login and onboarding checks.
   All 86 tests and local lint/packaging consistency checks pass.
-- `scripts/check`, `scripts/package.py`, and `scripts/smoke.py` provide checks,
-  zip packaging, and optional real-gateway verification.
+- `scripts/check` and `scripts/smoke.py` provide checks and optional real-gateway
+  verification. The release workflow handles ZIP packaging.
 
 ### Soil moisture implementation
 
