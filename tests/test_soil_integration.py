@@ -136,7 +136,7 @@ async def test_soil_discovery_and_later_poll(
         live_payload,
         [{"channel": "1", "humidity": "36%"}, {"channel": "5", "humidity": "0%"}],
     )
-    freezer.tick(timedelta(seconds=31))
+    freezer.tick(timedelta(seconds=61))
     async_fire_time_changed(hass, dt_util.utcnow())
     await hass.async_block_till_done()
     assert hass.states.get(entity_id).state == "36.0"

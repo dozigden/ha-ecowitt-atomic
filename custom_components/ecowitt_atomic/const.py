@@ -6,7 +6,7 @@ import logging
 DOMAIN = "ecowitt_atomic"
 CONF_BASE_URL = "base_url"
 CONF_MAC = "mac"
-POLL_INTERVAL = timedelta(seconds=30)
+POLL_INTERVAL = timedelta(minutes=1)
 REQUEST_TIMEOUT = 10
 SOIL_MOISTURE = "soil_moisture"
 TEMPERATURE = "temperature"

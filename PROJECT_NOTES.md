@@ -54,8 +54,10 @@ directory is excluded from Git; keep shared project notes free of those details.
 - The initial implementation covered the gateway's own internal readings. Soil
   moisture is the first external reading implemented. Continue prioritizing
   hardware readily available for verification.
-- Poll each gateway every 30 seconds with a fixed interval; no polling options
-  or separate metadata refresh schedule in the first pass.
+- Poll each gateway every 60 seconds with a fixed interval; no polling options
+  or separate metadata refresh schedule in the first pass. Changed from 30 seconds
+  on 2026-10-23 at the user's request to better match Ecowitt sensor transmission
+  intervals.
 - Follow HA coordinator availability: failed gateway polls make its entities
   unavailable; successful polls with missing or invalid readings report unknown
   values. Use the latest successful response without carrying omitted readings
@@ -718,7 +720,7 @@ building an expression language or implementing speculative rain attribution.
   back to address-based identity.
 - The code expects the current MAC-based entry format. Earlier development entry
   formats have no migration path; recreate development state when needed.
-- Polling is fixed at 30 seconds. Entities inherit `CoordinatorEntity`
+- Polling is fixed at 60 seconds (updated 2026-10-23). Entities inherit `CoordinatorEntity`
   availability: failed polls make them unavailable; successful polls restore
   availability and missing/invalid readings become unknown. Startup of an
   existing entry with empty readings creates unknown entities; initial UI setup
@@ -762,7 +764,7 @@ building an expression language or implementing speculative rain attribution.
 
 ### Soil moisture implementation
 
-- Each 30-second poll reads live data, version/page count, all registration
+- Each poll reads live data, version/page count, all registration
   pages and `/get_cli_soilad`. Responses without `sensorid_page` use the
   specification's two pages; malformed page counts or failed metadata requests
   fail the poll.

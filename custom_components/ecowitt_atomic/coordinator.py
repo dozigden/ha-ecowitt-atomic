@@ -22,7 +22,7 @@ class GatewayCoordinator(DataUpdateCoordinator[GatewayReadings]):
     def __init__(
         self, hass: HomeAssistant, entry: AtomicConfigEntry, client: EcowittApiClient
     ) -> None:
-        """Poll the gateway every 30 seconds."""
+        """Initialize gateway polling."""
         super().__init__(
             hass,
             LOGGER,

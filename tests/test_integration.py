@@ -71,6 +71,8 @@ async def test_setup_and_unload(
     assert state.attributes["unit_of_measurement"] == "°C"
     assert state.attributes["device_class"] == "temperature"
     assert state.attributes["state_class"] == "measurement"
+    await advance(hass, freezer, 30)
+    assert mock_api.async_get_live_data.await_count == 1
     await advance(hass, freezer, 31)
     assert mock_api.async_get_live_data.await_count == 2
     assert await hass.config_entries.async_unload(entry.entry_id)
@@ -90,7 +92,7 @@ async def test_missing_readings_become_unknown(
     temp_id = entity_id(entity_registry, "indoor_temperature")
     humidity_id = entity_id(entity_registry, "indoor_humidity")
     mock_api.async_get_live_data.return_value = {"wh25": [remaining_readings]}
-    await advance(hass, freezer, 31)
+    await advance(hass, freezer, 61)
     assert entry.runtime_data.coordinator.last_update_success
     assert hass.states.get(temp_id).state == "unknown"
     assert hass.states.get(humidity_id).state == (
@@ -116,14 +118,14 @@ async def test_failed_poll_makes_entities_unavailable_until_recovery(
     await setup(hass, entry)
     temp_id = entity_id(entity_registry, "indoor_temperature")
     mock_api.async_get_live_data.side_effect = GatewayError("offline")
-    await advance(hass, freezer, 31)
+    await advance(hass, freezer, 61)
     assert not entry.runtime_data.coordinator.last_update_success
     entities = er.async_entries_for_config_entry(entity_registry, entry.entry_id)
     assert len(entities) == 4
     assert all(
         hass.states.get(entity.entity_id).state == "unavailable" for entity in entities
     )
-    await advance(hass, freezer, 31)
+    await advance(hass, freezer, 61)
     assert hass.states.get(temp_id).state == "unavailable"
     mock_api.async_get_live_data.side_effect = None
     mock_api.async_get_live_data.return_value = {
@@ -165,7 +167,7 @@ async def test_gateway_isolation_and_reload(hass, entry, entity_registry, freeze
     second = second_entry.runtime_data.coordinator
     assert first is not second
     first.client.async_get_live_data = AsyncMock(side_effect=GatewayError("offline"))
-    await advance(hass, freezer, 31)
+    await advance(hass, freezer, 61)
     assert (
         hass.states.get(entity_id(entity_registry, "indoor_temperature")).state
         == "unavailable"
