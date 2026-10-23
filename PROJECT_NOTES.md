@@ -1,6 +1,7 @@
 # Ecowitt Atomic — project notes
 
 Last updated: 2026-10-23
+Last updated: 2026-10-23
 
 ## Keeping these notes current
 
@@ -16,6 +17,9 @@ directory is excluded from Git; keep shared project notes free of those details.
 
 ## Confirmed direction
 
+- Integration setup checks the running Home Assistant version against
+  `MIN_HA_VERSION` (2026.10.2, matching HACS metadata), logs an upgrade message
+  and refuses setup on older versions, using the standard `AwesomeVersion` guard.
 - Project icon source: `assets/icon.svg`, supplied by the user on 2026-10-23.
   Original 1024 × 1024 SVG with a solid navy background; rendered successfully.
   Bundled HA brand exports are `brand/icon.png` (256 px) and `brand/icon@2x.png`

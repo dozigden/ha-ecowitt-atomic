@@ -4,6 +4,7 @@ from datetime import timedelta
 import logging
 
 DOMAIN = "ecowitt_atomic"
+MIN_HA_VERSION = "2026.10.2"
 CONF_BASE_URL = "base_url"
 CONF_MAC = "mac"
 POLL_INTERVAL = timedelta(minutes=1)
