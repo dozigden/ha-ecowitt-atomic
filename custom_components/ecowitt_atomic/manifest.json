@@ -1,6 +1,7 @@
 {
   "domain": "ecowitt_atomic",
   "name": "Ecowitt Atomic",
+  "categories": [ "garden_plants", "weather_alerts" ],
   "codeowners": [],
   "config_flow": true,
   "documentation": "https://github.com/dozigden/ha-ecowitt-atomic",
