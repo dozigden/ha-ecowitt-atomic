@@ -716,6 +716,9 @@ building an expression language or implementing speculative rain attribution.
   and [release notes](https://www.home-assistant.io/blog/2026/10/07/release-202610/).
   The Python pin was updated at the user's request on 2026-10-18. Dependencies
   are locked in `uv.lock`.
+- Development dependencies are HA, its matching test plugin, mypy, and Ruff.
+  Removed unused `pyotp` and `pyqrcode` on 2026-10-29; all 363 tests, including
+  owner creation and onboarding, pass without them.
 - The first pass accepts only the verified gateway model. Model details and the
   real-gateway validation report are in the local infrastructure notes. It reads
   `get_version` and `get_network_info` during setup and polls `get_livedata_info`; it exposes only the

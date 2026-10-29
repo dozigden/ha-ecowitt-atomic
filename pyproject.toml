@@ -11,8 +11,6 @@ dependencies = []
 dev = [
   "homeassistant==2026.10.2",
   "mypy>=2.4.0",
-  "pyotp==2.10.0",
-  "pyqrcode==1.2.1",
   "pytest-homeassistant-custom-component==0.13.373",
   "ruff>=0.14",
 ]
