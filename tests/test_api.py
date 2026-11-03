@@ -4,7 +4,7 @@ import aiohttp
 from custom_components.ecowitt_atomic.api import (
     EcowittApiClient,
     GatewayError,
-    UnsupportedGatewayError,
+    InvalidGatewayError,
     normalize_base_url,
     normalize_mac,
 )
@@ -215,17 +215,18 @@ async def test_unrecognised_identity_rejected(hass, aioclient_mock, version):
     """Reject responses that cannot identify a gateway."""
     aioclient_mock.get(f"{BASE_URL}/get_version", json={"version": version})
     client = EcowittApiClient(BASE_URL, async_get_clientsession(hass))
-    with pytest.raises(UnsupportedGatewayError):
+    with pytest.raises(InvalidGatewayError):
         await client.async_get_info()
 
 
-async def test_client_decodes_other_gateway_models(hass, aioclient_mock):
-    """Decode gateway identity for the support check."""
+@pytest.mark.parametrize("model", ["GW3000A", "HP2560", "UnfamiliarGateway"])
+async def test_client_decodes_other_gateway_models(hass, aioclient_mock, model):
+    """Decode model metadata without a gateway model allowlist."""
     aioclient_mock.get(
-        f"{BASE_URL}/get_version", json={"version": "Version: GW3000_V1.0.0"}
+        f"{BASE_URL}/get_version", json={"version": f"Version: {model}_V1.2.5"}
     )
     aioclient_mock.get(f"{BASE_URL}/get_network_info", json={"mac": MAC})
     info = await EcowittApiClient(
         BASE_URL, async_get_clientsession(hass)
     ).async_get_info()
-    assert (info.model, info.firmware, info.mac) == ("GW3000", "1.0.0", MAC)
+    assert (info.model, info.firmware, info.mac) == (model, "1.2.5", MAC)

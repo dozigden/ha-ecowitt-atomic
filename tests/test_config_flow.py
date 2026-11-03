@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from custom_components.ecowitt_atomic.api import GatewayError, UnsupportedGatewayError
+from custom_components.ecowitt_atomic.api import GatewayError, InvalidGatewayError
 from custom_components.ecowitt_atomic.const import CONF_BASE_URL, CONF_MAC, DOMAIN
 from custom_components.ecowitt_atomic.models import GatewayInfo
 import pytest
@@ -15,15 +15,19 @@ from .conftest import BASE_URL, MAC, SECOND_MAC
 pytestmark = pytest.mark.usefixtures("mock_api")
 
 
-async def test_unverified_model_rejected(hass, mock_api):
-    """Apply the gateway support policy before creating an entry."""
-    mock_api.async_get_info.return_value = GatewayInfo("GW3000", "1.0.0", MAC)
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": SOURCE_USER}, data={CONF_BASE_URL: BASE_URL}
-    )
-    assert result["type"] is FlowResultType.FORM
-    assert result["errors"] == {"base": "unsupported_gateway"}
-    mock_api.async_get_live_data.assert_not_awaited()
+@pytest.mark.parametrize("model", ["GW3000A", "HP2560", "UnfamiliarGateway"])
+async def test_other_gateway_models(hass, mock_api, model):
+    """Create an entry for understood API data regardless of the model label."""
+    mock_api.async_get_info.return_value = GatewayInfo(model, "1.2.5", MAC)
+    with patch("custom_components.ecowitt_atomic.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}, data={CONF_BASE_URL: BASE_URL}
+        )
+        await hass.async_block_till_done()
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["title"] == f"{model} (020000000001)"
+    assert result["result"].unique_id == MAC
+    mock_api.async_get_live_data.assert_awaited_once()
 
 
 async def test_configure_gateway(hass):
@@ -110,11 +114,11 @@ async def test_reconfigure_wrong_gateway(hass, entry, mock_api):
     ("failure", "expected"),
     [
         (GatewayError("offline"), "cannot_connect"),
-        (UnsupportedGatewayError("unverified"), "unsupported_gateway"),
+        (InvalidGatewayError("invalid version"), "invalid_gateway"),
     ],
 )
 async def test_connection_errors(hass, mock_api, failure, expected):
-    """Show connection and model validation errors."""
+    """Show connection and identity response validation errors."""
     mock_api.async_get_info.side_effect = failure
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}, data={CONF_BASE_URL: BASE_URL}

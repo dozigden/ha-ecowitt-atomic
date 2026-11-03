@@ -2,7 +2,7 @@
 
 import logging
 
-from custom_components.ecowitt_atomic.api import GatewayError, UnsupportedGatewayError
+from custom_components.ecowitt_atomic.api import GatewayError, InvalidGatewayError
 from custom_components.ecowitt_atomic.const import DOMAIN
 from custom_components.ecowitt_atomic.diagnostics import (
     async_get_config_entry_diagnostics,
@@ -21,7 +21,7 @@ from .conftest import MAC
     [
         ("unload", ConfigEntryState.NOT_LOADED),
         ("connection_failure", ConfigEntryState.SETUP_RETRY),
-        ("unsupported_gateway", ConfigEntryState.SETUP_ERROR),
+        ("invalid_gateway", ConfigEntryState.SETUP_ERROR),
         ("reading_request_failure", ConfigEntryState.SETUP_RETRY),
     ],
 )
@@ -35,10 +35,8 @@ async def test_download_without_runtime_data(
     entry.add_to_hass(hass)
     if scenario == "connection_failure":
         mock_api.async_get_info.side_effect = GatewayError("private connection detail")
-    elif scenario == "unsupported_gateway":
-        mock_api.async_get_info.side_effect = UnsupportedGatewayError(
-            "unsupported model"
-        )
+    elif scenario == "invalid_gateway":
+        mock_api.async_get_info.side_effect = InvalidGatewayError("invalid version")
     elif scenario == "reading_request_failure":
         mock_api.async_get_live_data.side_effect = GatewayError(
             "reading request failed"

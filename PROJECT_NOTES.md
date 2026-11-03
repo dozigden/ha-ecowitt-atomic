@@ -1,7 +1,6 @@
 # Ecowitt Atomic — project notes
 
-Last updated: 2026-10-23
-Last updated: 2026-10-23
+Last updated: 2026-11-03
 
 ## Keeping these notes current
 
@@ -14,6 +13,56 @@ Project-specific agent instructions live in `AGENTS.md`. Keep machine-specific
 infrastructure addresses, configuration, and connectivity findings in
 [`.local/INFRASTRUCTURE.md`](.local/INFRASTRUCTURE.md). The entire `.local/`
 directory is excluded from Git; keep shared project notes free of those details.
+
+## New gateway inspection — 2026-11-03
+
+- A new gateway reports **GW3000A V1.2.5**. Read-only requests to
+  `get_version`, `get_network_info`, `get_livedata_info`, all four advertised
+  registration pages, `get_cli_soilad`, `get_cli_multiCh` and `get_cli_wh34`
+  returned HTTP 200 with JSON. Timestamped evidence and connection details are
+  recorded in [the local infrastructure notes](.local/INFRASTRUCTURE.md).
+- Registration pagination contains 66 records across pages of 17/17/17/15.
+  Live data includes internal readings, outdoor/derived and wind observations,
+  piezo rain, three temperature/humidity channels, six soil moisture channels
+  and one standalone temperature channel. Metadata supplies explicit channel/radio-ID
+  links for all three external reading groups, matching the existing mapping shape.
+- The user confirmed that both gateways run alongside each other for now.
+- Removed the gateway model allowlist at the user's request. Gateway model names
+  are metadata, not a support policy. Accept understood HTTP API responses with
+  valid MAC identity; continue to expose only recognised readings with established
+  meaning and ownership. Removed the implicit GW-prefix restriction from version
+  parsing too. An unrecognised version format remains an identity validation error,
+  with wording that no longer claims a particular model is required.
+- Disposable HA validation passed for GW3000A V1.2.5 (13 devices, 83 entities)
+  and GW2000A V3.3.2 (14 devices, 85 entities), including refresh, MAC identities
+  and stable entity identities after reload. Reports are linked in local notes.
+- All 369 tests, Ruff, formatting, strict mypy and metadata validation pass.
+  Regression coverage accepts unfamiliar model labels in API parsing, config flow
+  and stored-entry setup; gateway isolation/reload now uses different models.
+  Reviewed model-policy removal and retained validation paths with no actionable
+  findings. Persistent development HA has not been restarted for this change.
+  The user approved committing and pushing the reviewed changes on 2026-11-03.
+
+### Side-by-side gateway comparison — 2026-11-03
+
+- Near-simultaneous read-only captures confirm the same live-data groups and
+  existing channel/radio-ID ownership links on GW2000A V3.3.2 and GW3000A V1.2.5.
+  Existing reading mappings required no model-specific changes.
+- GW3000A supplies 66 registration slots (17/17/17/15 records), versus 64
+  (16/16/16/16). Additional unreceived slots are type 73 (`img: wn64`) and
+  type 72 (`img: wqt01`); their presence alone does not establish reading support.
+- Six received soil-moisture Ecowitt sensors have different channel assignments
+  between gateways, except two unchanged channels. Radio-ID joins correctly
+  distinguish ownership. GW3000A has blank configured channel names and lacks
+  the GW2000A's retained offline soil-moisture registration. This accounts for
+  one fewer device and two fewer diagnostic entities in the fresh HA checks.
+- GW3000A adds an unmapped piezo-rain record `id: 0x14` (meaning unverified),
+  `get_version.sd_status` and `debug[].reset_reason`. These are currently ignored.
+  Rain totals differ between gateways; totals remain gateway-scoped. The snapshot
+  does not establish why the counters differ. Additional slots/fields may reflect
+  firmware as well as hardware; do not generalise from these two gateways alone.
+- Raw comparison and exact local inventory are recorded in the local infrastructure
+  notes. No gateway settings were changed.
 
 ## Confirmed direction
 
@@ -80,6 +129,9 @@ directory is excluded from Git; keep shared project notes free of those details.
 - Gateway device names and integration entry titles use the model followed by
   the full uppercase MAC in parentheses, with the colons removed. Connection IP
   addresses are excluded from names. The normalized MAC remains the identity.
+- Gateway discovery is based on understood HTTP API responses, not a model
+  allowlist. Model names are metadata; reading capabilities and ownership still
+  require recognised, verified mappings.
 - Work with Ecowitt devices locally over the LAN.
 - Use the newer HTTP/JSON API. The user explicitly confirmed local access.
 - Use Ecowitt's linked HTTP API specification **v1.0.6** as the initial reference.
@@ -719,7 +771,8 @@ building an expression language or implementing speculative rain attribution.
 - Development dependencies are HA, its matching test plugin, mypy, and Ruff.
   Removed unused `pyotp` and `pyqrcode` on 2026-10-29; all 363 tests, including
   owner creation and onboarding, pass without them.
-- The first pass accepts only the verified gateway model. Model details and the
+- The initial first pass restricted setup to the verified gateway model; this
+  restriction was removed on 2026-11-03 (see new gateway inspection above). Model details and the
   real-gateway validation report are in the local infrastructure notes. It reads
   `get_version` and `get_network_info` during setup and polls `get_livedata_info`; it exposes only the
   indoor `wh25` group. This pass is intended for built-in indoor readings;

@@ -20,7 +20,7 @@
     "error": {
       "invalid_url": "Enter a valid HTTP or HTTPS gateway address without credentials, a path, or a query.",
       "cannot_connect": "Could not read the gateway. Check its address and local HTTP API support.",
-      "unsupported_gateway": "This first version supports the verified GW2000A gateway model.",
+      "invalid_gateway": "The gateway returned an unrecognised Ecowitt HTTP API version format.",
       "no_readings": "The gateway did not return any valid gateway readings."
     },
     "abort": {

@@ -7,7 +7,7 @@ from custom_components.ecowitt_atomic import async_remove_config_entry_device
 from custom_components.ecowitt_atomic.api import (
     EcowittApiClient,
     GatewayError,
-    UnsupportedGatewayError,
+    InvalidGatewayError,
 )
 from custom_components.ecowitt_atomic.const import CONF_BASE_URL, CONF_MAC, DOMAIN
 from custom_components.ecowitt_atomic.diagnostics import (
@@ -142,7 +142,7 @@ async def test_failed_poll_makes_entities_unavailable_until_recovery(
 
 @pytest.mark.no_fail_on_log_exception
 async def test_gateway_isolation_and_reload(hass, entry, entity_registry, freezer):
-    """Keep gateway polling and reloads independent."""
+    """Keep polling and reloads independent across different gateway models."""
     await setup(hass, entry)
     first = entry.runtime_data.coordinator
     second_entry = MockConfigEntry(
@@ -154,7 +154,7 @@ async def test_gateway_isolation_and_reload(hass, entry, entity_registry, freeze
     )
     second_api = AsyncMock(spec=EcowittApiClient)
     second_api.base_url = "http://other.example"
-    second_api.async_get_info.return_value = GatewayInfo("GW2000A", "3.3.2", SECOND_MAC)
+    second_api.async_get_info.return_value = GatewayInfo("GW3000A", "1.2.5", SECOND_MAC)
     second_api.async_get_live_data.return_value = {
         "wh25": [{"intemp": "19", "unit": "C"}]
     }
@@ -186,24 +186,30 @@ async def test_gateway_isolation_and_reload(hass, entry, entity_registry, freeze
     assert second.last_update_success
 
 
-async def test_unverified_model_setup_rejected(hass, entry, mock_api):
-    """Apply the gateway support policy when loading a stored entry."""
-    entry.add_to_hass(hass)
-    mock_api.async_get_info.return_value = GatewayInfo("GW3000", "1.0.0", MAC)
-    assert not await hass.config_entries.async_setup(entry.entry_id)
-    assert entry.state is ConfigEntryState.SETUP_ERROR
-    mock_api.async_get_live_data.assert_not_awaited()
+@pytest.mark.parametrize("model", ["GW3000A", "HP2560", "UnfamiliarGateway"])
+async def test_other_gateway_models_setup(
+    hass, entry, mock_api, entity_registry, model
+):
+    """Load understood readings without restricting the gateway model label."""
+    mock_api.async_get_info.return_value = GatewayInfo(model, "1.2.5", MAC)
+    await setup(hass, entry)
+    assert entry.state is ConfigEntryState.LOADED
+    assert entry.runtime_data.info.model == model
+    assert (
+        hass.states.get(entity_id(entity_registry, "indoor_temperature")).state
+        == "21.5"
+    )
 
 
 @pytest.mark.parametrize(
     ("failure", "expected"),
     [
         (GatewayError("offline"), ConfigEntryState.SETUP_RETRY),
-        (UnsupportedGatewayError("unverified model"), ConfigEntryState.SETUP_ERROR),
+        (InvalidGatewayError("invalid version"), ConfigEntryState.SETUP_ERROR),
     ],
 )
 async def test_setup_failure(hass, entry, mock_api, failure, expected):
-    """Map connection and model failures to setup states."""
+    """Map connection and identity response failures to setup states."""
     entry.add_to_hass(hass)
     mock_api.async_get_info.side_effect = failure
     assert not await hass.config_entries.async_setup(entry.entry_id)

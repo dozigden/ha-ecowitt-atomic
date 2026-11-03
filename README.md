@@ -28,6 +28,6 @@ flowchart TD
 ```
 
 Devices are created from registrations, even without live readings. Moisture
-entities are created only after an understood reading is observed. New devices
-and entities are temporarily restricted to registrations with `img: wh51`.
-Battery and voltage are not exposed yet.
+entities are created only after an understood reading is observed. Gateway model
+names do not restrict discovery: entities depend on recognised API readings and
+verified ownership mappings. Battery diagnostics are exposed; voltage is not.

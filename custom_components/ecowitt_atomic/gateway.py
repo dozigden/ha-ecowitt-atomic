@@ -1,24 +1,14 @@
-"""Validate gateway support and assemble reading snapshots."""
+"""Assemble gateway reading snapshots from recognised API data."""
 
-from .api import EcowittApiClient, UnsupportedGatewayError
+from .api import EcowittApiClient
 from .mapping_engine import (
     apply_gateway_mappings,
     apply_reading_mappings,
     metadata_endpoints,
 )
 from .mappings import GATEWAY_READING_MAPPINGS, READING_MAPPINGS
-from .models import GatewayInfo, GatewayReadings
+from .models import GatewayReadings
 from .parsers import parse_ecowitt_sensors, parse_internal_readings
-
-
-async def async_get_gateway_info(client: EcowittApiClient) -> GatewayInfo:
-    """Identify a gateway and require a verified model."""
-    info = await client.async_get_info()
-    if info.model != "GW2000A":
-        raise UnsupportedGatewayError(
-            "Reading mappings are currently verified for GW2000A only"
-        )
-    return info
 
 
 async def async_read_gateway(client: EcowittApiClient) -> GatewayReadings:

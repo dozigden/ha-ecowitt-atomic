@@ -18,8 +18,8 @@ class GatewayError(Exception):
     """Gateway request or response failure."""
 
 
-class UnsupportedGatewayError(GatewayError):
-    """Unverified gateway model."""
+class InvalidGatewayError(GatewayError):
+    """Gateway identity response does not match the expected API format."""
 
 
 def normalize_mac(value: object) -> str:
@@ -111,14 +111,12 @@ class EcowittApiClient:
         payload = await self._get_object("get_version")
         version = payload.get("version")
         match = (
-            re.fullmatch(r"Version:\s*(GW\w+)_V([\w.\-]+)", version)
+            re.fullmatch(r"Version:\s*(\w+)_V([\w.\-]+)", version)
             if isinstance(version, str)
             else None
         )
         if match is None:
-            raise UnsupportedGatewayError(
-                "Could not identify a supported Ecowitt gateway"
-            )
+            raise InvalidGatewayError("Gateway returned an unrecognised version format")
         network = await self._get_object("get_network_info")
         try:
             mac = normalize_mac(network.get("mac"))

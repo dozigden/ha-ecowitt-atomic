@@ -15,12 +15,12 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import (
     EcowittApiClient,
     GatewayError,
-    UnsupportedGatewayError,
+    InvalidGatewayError,
     normalize_base_url,
 )
 from .const import CONF_BASE_URL, DOMAIN
 from .data import GatewayConfigData
-from .gateway import async_get_gateway_info, async_read_gateway
+from .gateway import async_read_gateway
 
 
 class AtomicConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -54,7 +54,7 @@ class AtomicConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 client = EcowittApiClient(base_url, async_get_clientsession(self.hass))
                 try:
-                    info = await async_get_gateway_info(client)
+                    info = await client.async_get_info()
                     await self.async_set_unique_id(info.mac)
                     if self.source == SOURCE_RECONFIGURE:
                         self._abort_if_unique_id_mismatch(reason="wrong_gateway")
@@ -62,8 +62,8 @@ class AtomicConfigFlow(ConfigFlow, domain=DOMAIN):
                         self._abort_if_unique_id_configured()
                     if not (await async_read_gateway(client)).gateway:
                         errors["base"] = "no_readings"
-                except UnsupportedGatewayError:
-                    errors["base"] = "unsupported_gateway"
+                except InvalidGatewayError:
+                    errors["base"] = "invalid_gateway"
                 except GatewayError:
                     errors["base"] = "cannot_connect"
                 if not errors:

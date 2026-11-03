@@ -16,14 +16,13 @@ from homeassistant.helpers.typing import ConfigType
 from .api import (
     EcowittApiClient,
     GatewayError,
-    UnsupportedGatewayError,
+    InvalidGatewayError,
     normalize_base_url,
 )
 from .const import CONF_BASE_URL, DOMAIN, LOGGER, MIN_HA_VERSION
 from .coordinator import GatewayCoordinator
 from .data import AtomicConfigEntry, GatewayData
 from .devices import async_setup_devices
-from .gateway import async_get_gateway_info
 
 PLATFORMS = [Platform.SENSOR]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -54,8 +53,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: AtomicConfigEntry) -> bo
         raise ConfigEntryError("Invalid gateway address") from err
     client = EcowittApiClient(base_url, async_get_clientsession(hass))
     try:
-        info = await async_get_gateway_info(client)
-    except UnsupportedGatewayError as err:
+        info = await client.async_get_info()
+    except InvalidGatewayError as err:
         raise ConfigEntryError(str(err)) from err
     except GatewayError as err:
         raise ConfigEntryNotReady(str(err)) from err
