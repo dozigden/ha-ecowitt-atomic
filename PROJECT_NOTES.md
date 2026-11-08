@@ -1,6 +1,6 @@
 # Ecowitt Atomic — project notes
 
-Last updated: 2026-11-03
+Last updated: 2026-11-08
 
 ## Keeping these notes current
 
@@ -86,13 +86,18 @@ directory is excluded from Git; keep shared project notes free of those details.
   instance is disposable and can be recreated for breaking changes. Revisit
   compatibility when preparing a supported release; see `AGENTS.md`.
 - GitHub Actions runs `scripts/check` on pushes to main, pull requests targeting
-  main, and manual dispatch. It uses the project Python pin and locked dependencies.
-  Run the same checks locally. Packaging happens only in
-  `.github/workflows/release.yml` when a GitHub release is published: it sets the
-  packaged manifest version from the release tag, zips the integration directory,
-  and uploads `ecowitt_atomic.zip` to the release, matching Absolute Humidity.
-  No local packaging script or local ZIP build is needed. HACS publication remains
-  deferred.
+  main, and manual dispatch. The same CI workflow is reusable by the release
+  workflow and uses the project Python pin and locked dependencies. Run the same
+  checks locally.
+- Releases start by pushing a version tag, for example `0.1.1` or `0.1.1b1`
+  (an optional `v` prefix is accepted). `.github/workflows/release.yml` requires
+  CI to pass on the tagged commit before packaging and publishing a GitHub release.
+  Accepted versions are three numeric components with an optional `aN`, `bN` or
+  `rcN` suffix; those suffixes mark GitHub prereleases. Packaging removes the
+  optional `v` prefix from the manifest version, creates `ecowitt_atomic.zip`,
+  and attaches it with generated release notes. Source versions remain unchanged.
+  Publishing a release manually no longer triggers packaging. No local packaging
+  script is needed. HACS publication remains deferred.
 - Keep the development README minimal, retaining "Under development. Do not use."
   On 2026-10-20 the user requested a Mermaid diagram explaining soil moisture
   attribution, with example fields at each endpoint and their HA uses.
@@ -925,6 +930,14 @@ building an expression language or implementing speculative rain attribution.
 
 ## Decision log
 
+- **2026-11-08:** Changed release automation to start on version-tag pushes and
+  reuse CI before packaging/publication. CI and release concurrency groups are
+  distinct so the reusable workflow cannot cancel its caller. Actionlint passes;
+  local execution verified five stable/prerelease tag forms, rejected six invalid
+  tags, and confirmed the ZIP contains exactly the tracked integration files with
+  the requested manifest version. GitHub publication has not been exercised; no
+  tag or release was created. Reviewed the workflow changes with no actionable
+  findings; the user approved committing and pushing them on 2026-11-08.
 - **2026-10-21:** Removed the temporary WH51/WH31 filter from device and entity
   discovery at the user's request. All valid registrations now produce devices
   and mapped diagnostics, including unfamiliar or absent image markers.

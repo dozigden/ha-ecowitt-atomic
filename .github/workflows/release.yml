@@ -1,35 +1,78 @@
-name: "Release"
+name: Release
 
 on:
-  release:
-    types:
-      - "published"
+  push:
+    tags:
+      - "[0-9]*"
+      - "v[0-9]*"
 
-permissions: {}
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
   release:
-    name: "Release"
-    runs-on: "ubuntu-latest"
+    name: Release
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
-      - name: "Checkout the repository"
-        uses: "actions/checkout@v7"
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
-      - name: "Adjust version number"
-        shell: "bash"
+      - name: Validate release version
+        id: version
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
-            "${{ github.workspace }}/custom_components/ecowitt_atomic/manifest.json"
+          version="${RELEASE_TAG#v}"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?$ ]]; then
+            echo "::error::Expected a version such as 0.1.1 or 0.1.1b1, optionally prefixed with v"
+            exit 1
+          fi
+          prerelease=false
+          if [[ "$version" =~ (a|b|rc)[0-9]+$ ]]; then
+            prerelease=true
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
 
-      - name: "ZIP the integration directory"
-        shell: "bash"
+      - name: Adjust packaged version
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          cd "${{ github.workspace }}/custom_components/ecowitt_atomic"
-          zip ecowitt_atomic.zip -r ./
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
 
-      - name: "Upload the ZIP file to the release"
+          path = Path("custom_components/ecowitt_atomic/manifest.json")
+          manifest = json.loads(path.read_text())
+          manifest["version"] = os.environ["RELEASE_VERSION"]
+          path.write_text(json.dumps(manifest, indent=2) + "\n")
+          PY
+
+      - name: ZIP the integration directory
+        working-directory: custom_components/ecowitt_atomic
+        run: |
+          zip -r "$RUNNER_TEMP/ecowitt_atomic.zip" .
+
+      - name: Publish release with ZIP
         uses: softprops/action-gh-release@v3.0.3
         with:
-          files: ${{ github.workspace }}/custom_components/ecowitt_atomic/ecowitt_atomic.zip
+          tag_name: ${{ github.ref_name }}
+          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: ${{ runner.temp }}/ecowitt_atomic.zip
