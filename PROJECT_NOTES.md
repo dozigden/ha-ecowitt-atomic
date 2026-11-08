@@ -941,17 +941,22 @@ building an expression language or implementing speculative rain attribution.
 - When adding external Ecowitt sensor support, verify the gateway's status
   indicators before deciding individual device availability. Successful gateway
   polling does not establish an Ecowitt sensor's radio connectivity or reading age.
-- Before HACS publication, complete full HACS validation against the repository.
-  The project icon is already bundled; manifest issue URL and codeowner metadata
-  are included with the CI validation changes. As of 2026-11-08 the GitHub
-  repository has no topics, which fails HACS's topics check. Proposed topics:
-  `home-assistant`, `hacs`, `ecowitt`. Repository topics still need adding.
-  No HACS distribution is claimed.
+- HACS and hassfest CI pass. Repository topics are `home-assistant` and `ecowitt`;
+  the user requested omitting `hacs`. Catalog submission remains deferred.
 - Further external readings follow the board roadmap after the testing and local
   development deployment review.
 
 ## Decision log
 
+- **2026-11-08:** Published initial release `0.1.1` from `b2c5f92` after all CI
+  jobs passed. Verified the release notes, Latest status, and attached ZIP's
+  manifest version and contents. At the user's request, replace manual copying
+  instructions with an Add to Marketplace link in the published release and
+  `RELEASE_NOTES.md`. At the user's direction, use HA-Absolute-Humidity's
+  Marketplace badge and `marketplace_repository` redirect, adapted to this
+  repository. Added the same badge to the README, inside Marketplace exclusion
+  markers as in the reference project. The Marketplace link requires HA 2026.11+; the integration itself
+  retains its 2026.10.2 minimum.
 - **2026-11-08:** Added separate HACS and hassfest jobs to reusable CI, using
   BoardOil's `.github/workflows/validate.yml` as the reference. Both gate tagged
   releases. Added manifest codeowner and issue URL. Local validation with the

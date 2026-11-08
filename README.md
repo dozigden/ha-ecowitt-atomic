@@ -16,3 +16,9 @@ on the gateway device.
 
 Registered Ecowitt sensors still get their own devices with available diagnostics,
 eg battery and signal stregth.
+
+<!-- ha-marketplace:exclude-start -->
+## Installation
+
+[![Open your Home Assistant instance and open a repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=dozigden&repository=ha-ecowitt-atomic&category=integration)
+<!-- ha-marketplace:exclude-end -->
