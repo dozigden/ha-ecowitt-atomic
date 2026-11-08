@@ -144,6 +144,12 @@
       },
       "piezo_rain_year": {
         "name": "Piezo rain this year"
+      },
+      "capacitor_voltage": {
+        "name": "Capacitor voltage"
+      },
+      "firmware_version": {
+        "name": "Firmware version"
       }
     }
   }

@@ -12,6 +12,7 @@ from homeassistant.const import (
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     EntityCategory,
+    UnitOfElectricPotential,
     UnitOfPrecipitationDepth,
     UnitOfPressure,
     UnitOfSpeed,
@@ -75,6 +76,21 @@ class AtomicSensorDescription(SensorEntityDescription):
 SENSOR_DESCRIPTIONS = {
     description.key: description
     for description in (
+        AtomicSensorDescription(
+            key="capacitor_voltage",
+            translation_key="capacitor_voltage",
+            device_class=SensorDeviceClass.VOLTAGE,
+            native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+            state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=1,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            include_in_diagnostics=True,
+        ),
+        AtomicSensorDescription(
+            key="firmware_version",
+            translation_key="firmware_version",
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
         AtomicSensorDescription(
             key=RSSI,
             translation_key="rssi",

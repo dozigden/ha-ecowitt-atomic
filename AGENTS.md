@@ -38,6 +38,13 @@
   entity identities across physical-source changes. Keep conventional and piezo
   rain streams distinct. Do not infer physical ownership from registration
   presence, model, image or name.
+- For recognised WS/WH-prefixed API properties, treat WS and WH as interchangeable
+  and resolve ownership through the documented registration-type catalogue only
+  when the designation occupies exactly one catalogue entry. Singleton status
+  is independent of the current registered inventory. Require a valid matching
+  registration on the same gateway. Keep suffix parsing and capabilities separate
+  from ownership; unknown suffixes do not create entities. Preserve API group
+  context. Generic unprefixed voltage does not gain ownership from nearby fields.
 - Create devices directly from registered Ecowitt sensor identities, even before
   any recognised readings arrive. Entity discovery must not gate device creation.
 - Discover all valid registered Ecowitt sensors, regardless of `img` or model.

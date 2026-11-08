@@ -63,6 +63,13 @@ directory is excluded from Git; keep shared project notes free of those details.
   firmware as well as hardware; do not generalise from these two gateways alone.
 - Raw comparison and exact local inventory are recorded in the local infrastructure
   notes. No gateway settings were changed.
+- **2026-11-08 follow-up:** A fresh GW2000A live response still omits piezo
+  rain `0x14`. The user directed using GW2000A for now; further live verification
+  of the GW3000A-only observed record must wait until that gateway is available.
+  Its last saved value was 0.0 mm on 2026-11-03, not a current reading.
+- The user subsequently shelved the extra rain-total investigation on
+  2026-11-08. Resume when GW3000A is available and rainfall provides changing
+  values for comparison. Story #16 remains Todo, moved below active priorities.
 
 ## Confirmed direction
 
@@ -347,6 +354,81 @@ directory is excluded from Git; keep shared project notes free of those details.
   instance verified 12 RSSI entities, 67 total entities and 14 devices against
   the real gateway, including refresh and stable identities after reload.
   Persistent development HA has not been restarted for this change.
+
+## WS85 diagnostic field research — 2026-11-08
+
+- The user reported just installing WS85 firmware 1.1.8; the current captured
+  `ws85_ver` is `118`, versus `116` in the November 3 capture. This supports
+  firmware-version interpretation; arbitrary version encoding remains unverified.
+- [Ecowitt's WS85 manual](https://oss.ecowitt.net/uploads/20251226/WS85%20Manual.pdf)
+  describes the solar-charged supercapacitor and its displayed voltage.
+  [aioecowitt's mapping](https://github.com/home-assistant-libs/aioecowitt/blob/main/aioecowitt/sensor.py)
+  explicitly maps `ws85cap_volt` to WH85 Capacitor voltage and separately maps
+  `ws90cap_volt` to WH90 Capacitor voltage. This corroborates field meaning;
+  aioecowitt's upload protocol is distinct from our local HTTP polling API.
+- A [first-hand HTTP response posted on 2025-08-22](https://wetterstationsforum.info/viewtopic.php?p=28575)
+  reports both `ws85cap_volt`/`ws85_ver` and `ws90cap_volt`/`ws90_ver` on one
+  rain record `0x13`, alongside generic `battery`/`voltage`. This is external
+  observational evidence that named diagnostics can coexist independently of
+  the shared rain total, not a locally reproduced coexistence test. It does not
+  establish ownership of the generic voltage field or total.
+- [Official WS85 1.1.8 release notes](https://oss.ecowitt.net/uploads/20260323/WS85%20Firmware%20Release%20Notes.pdf)
+  dated 2026-03-23 describe a battery-voltage reporting fix under external power.
+  Do not attribute changes across the user's upgrade solely to battery condition.
+- At this research stage no diagnostic mappings were implemented; the subsequent
+  user-approved ownership rule and implementation are recorded below. Shared
+  weather observations retain gateway ownership.
+- Follow-up: section 7 of the official HTTP v1.0.6 specification explicitly
+  defines `eWH85_SENSOR = 49` and `eWH90_SENSOR = 48`. Its registration examples
+  include a `version` field directly on those records. A fresh GW2000A read
+  confirms `type: 49` has `version: 118`, matching the user's WS85 1.1.8 update
+  and the earlier live `ws85_ver`. Firmware can therefore be read directly from
+  registration, with explicit ownership, instead of joining the live field.
+  A proposed capacitor rule would explicitly map `ws85cap_volt` to registered
+  type 49 (WS90 counterpart: type 48); this is a semantic mapping using the
+  documented type catalogue, not a radio-ID link contained in the reading.
+  Generic `voltage` remains unattributed and was explicitly excluded by the user.
+
+### Named-property ownership implementation — 2026-11-08
+
+- User-selected rule: treat WS and WH prefixes as interchangeable. Match the
+  designation only if it occurs exactly once in the complete documented type
+  catalogue, regardless of the number of currently registered Ecowitt sensors.
+  Require that type to have a valid registration on this gateway. WH31 and other
+  channel families remain ambiguous even with one registration. This supersedes
+  the earlier suggestion to permit only individually documented WS/WH aliases.
+- Added the v1.0.6 registration catalogue, including channel and reserved entries,
+  and a singleton property-name owner strategy in the existing mapping engine.
+  Newer unverified designations remain unmatched; discovery of registrations
+  itself still does not require a catalogue entry.
+- The verified `piezoRain` group supplies recognised suffixes: `cap_volt` becomes
+  a capacitor-voltage diagnostic in volts; `_ver` becomes a firmware-version
+  diagnostic. The understood three-digit firmware encoding is displayed as
+  dotted digits (`118` → `1.1.8`); other encodings supply no reading. Ownership
+  resolution is separate from suffix parsing. Unknown suffixes, invalid values,
+  invalid registrations and duplicated properties/aliases are not guessed.
+  Shared rain ownership and generic voltage are unchanged.
+- Both capabilities reuse existing discovery, retention and restoration. They
+  are discovered independently, missing values become unknown, and registration
+  metadata does not gate device creation on the new readings.
+- Validation: all 422 tests, Ruff, formatting, strict mypy, metadata/translation
+  validation and whitespace checks pass. Tests cover WS/WH aliases, catalogue
+  cardinality, independent WS85/WS90 ownership, source context, ambiguous
+  producers, invalid values and HA discovery/retention/reload. A disposable HA
+  instance against GW2000A discovered both new diagnostics on the type-49 device;
+  refresh and reload preserved identities (14 devices, 87 entities). See local
+  infrastructure notes for the timestamped report. Reviewed the diff with no
+  actionable findings. The user approved committing these changes on 2026-11-08;
+  story #17 can move to Done after the commit succeeds.
+  Persistent development HA has not been restarted.
+
+- **2026-11-08 property-scan follow-up:** A fresh recursive scan of GW2000A
+  live data, version, all registration pages and the three channel-metadata
+  endpoints currently used by the integration found only `ws85cap_volt` and
+  `ws85_ver` as WS/WH-prefixed properties with suffixes, both in `piezoRain`.
+  The `wh25` key is a group name, not a suffixed property. No additional matches
+  were found in the other returned groups/endpoints; this does not establish
+  what other hardware or currently absent groups could supply.
 
 ## Wind and rain capture — 2026-10-22
 
@@ -718,6 +800,25 @@ building an expression language or implementing speculative rain attribution.
 
 ## Project and task tracking
 
+- **2026-11-08 board reconciliation:** At the user's request, moved completed,
+  reviewed and committed temperature/humidity and battery stories #7, #8, #9 and
+  #11 to Done, with evidence from commit `6c85c91`. Closed ownership investigation
+  #13 with the gateway-scoped shared-observation decision committed in `d1e43a4`;
+  this does not claim physical attribution was solved. Battery/reception
+  investigation #10 is In Progress for its unresolved voltage/signal work.
+  Connectivity #12, slot reassignment #14 and consolidated testing/deployment
+  review #6 remain Todo. Experiment #3 remains In Progress; its recorder and
+  battery-state statements are historical, and ad hoc stage captures suffice.
+  Added Todo stories #16–#27 for extra rain totals, voltage diagnostics, gateway
+  diagnostics, Beaufort, light/UV, remaining temperature indices, air quality,
+  lightning, leaks, leaf wetness, distance/depth and soil EC. Extra rain total
+  #16 and voltage diagnostics #17 were initially prioritised. Subsequently #16
+  was deferred and #17 was narrowed to singleton named-property matching and
+  implemented (see above).
+  Documented API possibilities require hardware/field verification before
+  implementation. Configuration/control endpoints remain outside the agreed
+  read-only scope. Earlier roadmap entries below are historical.
+
 - Working directory: `/home/luke/projects/ha/ha-ecowitt-atomic`.
 - At initial inspection, the directory contained `.codex/config.toml` and no
   application source files; it was not yet a Git repository.
@@ -910,12 +1011,14 @@ building an expression language or implementing speculative rain attribution.
 
 ## Remaining work
 
-- After soil moisture, review testing, particularly integration testing, and
-  establish the local development deployment workflow before adding further
-  reading support (user priority, 2026-10-19). Build on the existing setup,
-  develop, reset and smoke scripts. Review coverage of discovery, polling,
-  reload/restart and registry retention through HA, and make deploying and
-  verifying local changes repeatable. This is the next planned story, #6.
+- Singleton named-property diagnostics are implemented and reviewed (story #17).
+  Generic voltage was excluded by the user. Extra rain total #16 is deferred
+  pending GW3000A availability and rainfall. Broader unmapped readings are tracked in
+  #18–#27; their presence in documentation does not establish hardware support.
+- Consolidated testing and local deployment review remains open as story #6.
+  Existing setup/develop/reset/smoke scripts and lifecycle coverage are in use;
+  the earlier prerequisite ordering has been overtaken by implemented readings.
+  Review meaningful gaps and document the repeatable workflow and its limits.
 - HACS work is not part of the current board roadmap; revisit distribution
   planning when the user wants to pursue it.
 - Battery-removal identity experiment started on 2026-10-18 for one soil moisture

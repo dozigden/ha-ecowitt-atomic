@@ -17,10 +17,12 @@ from .mapping_engine import (
     MappingRule,
     OwnRegistration,
     RegistrationRecords,
+    SingletonPropertyName,
     UnitFieldReading,
 )
 from .parsers import (
     parse_battery,
+    parse_firmware_version,
     parse_percentage,
     parse_radio_id_reading,
     parse_rain_depth,
@@ -28,6 +30,7 @@ from .parsers import (
     parse_rssi,
     parse_temperature,
     parse_text,
+    parse_voltage,
     parse_vpd,
     parse_wind_direction,
     parse_wind_speed,
@@ -88,6 +91,14 @@ READING_MAPPINGS = (
     TEMPERATURE_HUMIDITY_MAPPING,
     TEMPERATURE_MAPPING,
     REGISTRATION_MAPPING,
+    MappingRule(
+        source=LiveGroup("piezoRain"),
+        owner=SingletonPropertyName(),
+        readings=(
+            FieldReading("cap_volt", "capacitor_voltage", parse_voltage),
+            FieldReading("_ver", "firmware_version", parse_firmware_version),
+        ),
+    ),
 )
 
 

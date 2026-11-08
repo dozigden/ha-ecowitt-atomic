@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 
+from .catalogue import singleton_property
 from .models import EcowittSensorData, Reading, TextReading
 from .parsers import is_json_object, parse_radio_id, parse_text, unique_records
 
@@ -23,6 +24,11 @@ class RegistrationRecords:
 @dataclass(frozen=True)
 class OwnRegistration:
     """The identity of the registration record itself."""
+
+
+@dataclass(frozen=True)
+class SingletonPropertyName:
+    """Link prefixed properties through singleton registration designations."""
 
 
 @dataclass(frozen=True)
@@ -67,7 +73,7 @@ class MappingRule:
     """Describe a source, its owner and its understood readings."""
 
     source: LiveGroup | RegistrationRecords
-    owner: ChannelRadioJoin | OwnRegistration
+    owner: ChannelRadioJoin | OwnRegistration | SingletonPropertyName
     readings: tuple[FieldReading | UnitFieldReading, ...]
     name_field: str | None = None
 
@@ -179,17 +185,40 @@ def _resolve_records(
             if slot in ecowitt_sensors
         }
 
-    if isinstance(rule.source, LiveGroup) and isinstance(rule.owner, ChannelRadioJoin):
+    if isinstance(rule.source, LiveGroup) and isinstance(
+        rule.owner, (ChannelRadioJoin, SingletonPropertyName)
+    ):
         group = payload.get(rule.source.name)
         if not isinstance(group, list):
             return {}
         live_records = [record for record in group if is_json_object(record)]
+        if isinstance(rule.owner, SingletonPropertyName):
+            return _resolve_properties(live_records, ecowitt_sensors)
         channel_metadata = metadata.get(rule.owner.endpoint, ())
         return _resolve_channels(
             rule.owner, live_records, channel_metadata, ecowitt_sensors
         )
 
     raise ValueError("Unsupported mapping source and owner combination")
+
+
+def _resolve_properties(
+    records: Sequence[Mapping[str, object]],
+    ecowitt_sensors: Mapping[int, EcowittSensorData],
+) -> dict[int, Mapping[str, object]]:
+    """Resolve each named property independently, rejecting duplicate aliases."""
+    candidates: dict[tuple[int, str], list[object]] = defaultdict(list)
+    for record in records:
+        for field, value in record.items():
+            match = singleton_property(field)
+            if match is not None and match[0] in ecowitt_sensors:
+                candidates[match].append(value)
+
+    owned: dict[int, dict[str, object]] = defaultdict(dict)
+    for (slot, suffix), values in candidates.items():
+        if len(values) == 1:
+            owned[slot][suffix] = values[0]
+    return dict(owned)
 
 
 def _resolve_channels(

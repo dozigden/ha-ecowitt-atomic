@@ -73,6 +73,19 @@ def parse_rssi(value: object) -> Reading | None:
     return Reading(number, "dBm") if number is not None else None
 
 
+def parse_voltage(value: object) -> Reading | None:
+    """Parse a nonnegative voltage from a field defined in volts."""
+    number = _number(value)
+    return Reading(number, "V") if number is not None and number >= 0 else None
+
+
+def parse_firmware_version(value: object) -> TextReading | None:
+    """Format the understood three-digit Ecowitt firmware representation."""
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{3}", value):
+        return None
+    return TextReading(".".join(value))
+
+
 def _quantity(value: object, factors: Mapping[str, float], unit: str) -> Reading | None:
     """Convert a nonnegative value with an embedded unit."""
     if not isinstance(value, str):
