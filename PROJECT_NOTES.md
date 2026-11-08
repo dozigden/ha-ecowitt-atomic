@@ -92,6 +92,12 @@ directory is excluded from Git; keep shared project notes free of those details.
   releases, following BoardOil's validation workflow. HACS PR comments are
   disabled and no validation checks are ignored. HACS reads the pushed commit
   (or PR head commit) from GitHub rather than the local working tree.
+- Keep the official HACS and hassfest actions. Their wrappers are SHA-pinned,
+  while the upstream container images intentionally follow current validation
+  requirements. Validators stay in separate jobs with read-only repository
+  permissions. Pin the release uploader to a full commit SHA too: `v3.0.3`
+  resolves to `efb35369e0ad2afab669f228072c1b0d510eae64`, verified against
+  `softprops/action-gh-release` on 2026-11-08.
 - Releases start by pushing a version tag, for example `0.1.1` or `0.1.1b1`
   (an optional `v` prefix is accepted). `.github/workflows/release.yml` requires
   CI to pass on the tagged commit before packaging and publishing a GitHub release.
