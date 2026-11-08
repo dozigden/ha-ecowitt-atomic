@@ -73,6 +73,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
-          generate_release_notes: true
+          body_path: RELEASE_NOTES.md
           fail_on_unmatched_files: true
           files: ${{ runner.temp }}/ecowitt_atomic.zip

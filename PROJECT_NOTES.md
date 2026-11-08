@@ -88,14 +88,19 @@ directory is excluded from Git; keep shared project notes free of those details.
 - GitHub Actions runs `scripts/check` on pushes to main, pull requests targeting
   main, and manual dispatch. The same CI workflow is reusable by the release
   workflow and uses the project Python pin and locked dependencies. Run the same
-  checks locally.
+  checks locally. Separate HACS and hassfest jobs in that workflow also gate
+  releases, following BoardOil's validation workflow. HACS PR comments are
+  disabled and no validation checks are ignored. HACS reads the pushed commit
+  (or PR head commit) from GitHub rather than the local working tree.
 - Releases start by pushing a version tag, for example `0.1.1` or `0.1.1b1`
   (an optional `v` prefix is accepted). `.github/workflows/release.yml` requires
   CI to pass on the tagged commit before packaging and publishing a GitHub release.
   Accepted versions are three numeric components with an optional `aN`, `bN` or
   `rcN` suffix; those suffixes mark GitHub prereleases. Packaging removes the
   optional `v` prefix from the manifest version, creates `ecowitt_atomic.zip`,
-  and attaches it with generated release notes. Source versions remain unchanged.
+  and attaches it with the contents of `RELEASE_NOTES.md` from the tagged commit.
+  Update that file for the upcoming release before tagging; Git history retains
+  earlier versions. Source versions remain unchanged.
   Publishing a release manually no longer triggers packaging. No local packaging
   script is needed. HACS publication remains deferred.
 - Keep the development README minimal, retaining "Under development. Do not use."
@@ -922,14 +927,30 @@ building an expression language or implementing speculative rain attribution.
 - When adding external Ecowitt sensor support, verify the gateway's status
   indicators before deciding individual device availability. Successful gateway
   polling does not establish an Ecowitt sensor's radio connectivity or reading age.
-- Before HACS publication, add the issue URL and codeowners,
-  add a project icon, and run full HACS validation against that repository. Local
-  packaging consistency and hassfest pass; no HACS distribution is claimed yet.
+- Before HACS publication, complete full HACS validation against the repository.
+  The project icon is already bundled; manifest issue URL and codeowner metadata
+  are included with the CI validation changes. As of 2026-11-08 the GitHub
+  repository has no topics, which fails HACS's topics check. Proposed topics:
+  `home-assistant`, `hacs`, `ecowitt`. Repository topics still need adding.
+  No HACS distribution is claimed.
 - Further external readings follow the board roadmap after the testing and local
   development deployment review.
 
 ## Decision log
 
+- **2026-11-08:** Added separate HACS and hassfest jobs to reusable CI, using
+  BoardOil's `.github/workflows/validate.yml` as the reference. Both gate tagged
+  releases. Added manifest codeowner and issue URL. Local validation with the
+  current hassfest container reports one valid integration and zero invalid;
+  actionlint and project metadata validation pass. Full HACS validation remains
+  pending publication of these changes and adding repository topics. Reviewed
+  the changes; the user approved committing and pushing them on 2026-11-08.
+- **2026-11-08:** Replaced automatically generated release notes with
+  `RELEASE_NOTES.md`, read by the release action's `body_path` input. Drafted
+  a short first-release summary, verified gateways, minimum HA version, and
+  installation steps for user review. Keep release notes brief, as requested.
+  These notes describe the upcoming release; update them before each release tag.
+  The user reviewed the notes and approved committing and pushing on 2026-11-08.
 - **2026-11-08:** Changed release automation to start on version-tag pushes and
   reuse CI before packaging/publication. CI and release concurrency groups are
   distinct so the reusable workflow cannot cancel its caller. Actionlint passes;
