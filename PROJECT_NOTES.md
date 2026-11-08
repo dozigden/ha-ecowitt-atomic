@@ -95,7 +95,12 @@ directory is excluded from Git; keep shared project notes free of those details.
 - Keep the official HACS and hassfest actions. Their wrappers are SHA-pinned,
   while the upstream container images intentionally follow current validation
   requirements. Validators stay in separate jobs with read-only repository
-  permissions. Pin the release uploader to a full commit SHA too: `v3.0.3`
+  permissions and `cache-mode: none` to prevent access to shared Actions caches.
+  The project checks retain uv caching. Release immutability is deferred at the
+  user's request (2026-11-08). Actionlint 1.7.12 does not yet recognise this
+  documented cache control (upstream issue rhysd/actionlint#762); zizmor parses
+  the workflow, and actionlint passes with only that known diagnostic excluded.
+  Pin the release uploader to a full commit SHA too: `v3.0.3`
   resolves to `efb35369e0ad2afab669f228072c1b0d510eae64`, verified against
   `softprops/action-gh-release` on 2026-11-08.
 - Releases start by pushing a version tag, for example `0.1.1` or `0.1.1b1`
