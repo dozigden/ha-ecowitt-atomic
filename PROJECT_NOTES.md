@@ -103,9 +103,12 @@ directory is excluded from Git; keep shared project notes free of those details.
   earlier versions. Source versions remain unchanged.
   Publishing a release manually no longer triggers packaging. No local packaging
   script is needed. HACS publication remains deferred.
-- Keep the development README minimal, retaining "Under development. Do not use."
-  On 2026-10-20 the user requested a Mermaid diagram explaining soil moisture
-  attribution, with example fields at each endpoint and their HA uses.
+- Keep the README brief and conversational. On 2026-11-08 the user requested
+  replacing the development warning and soil-moisture diagram with an explanation
+  of the integration's opinionated reading attribution: assign readings using
+  API evidence and keep shared observations on the gateway. Retain the user's
+  cautious wording about readiness for other people to use. Registered Ecowitt
+  sensors still get devices independently of measurement attribution.
   Comments should explain constraints or non-obvious decisions, not repeat code.
 - Build a Home Assistant integration with a separate device for each physical
   Ecowitt sensor, grouping its readings into entities, and a separate gateway device.
