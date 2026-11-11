@@ -590,6 +590,14 @@ directory is excluded from Git; keep shared project notes free of those details.
 
 ## API references
 
+- **2026-11-08 alternative gateway-firmware feasibility:** Saved GW2000A V3.3.2
+  static analysis identifies CMT2219A/CMT2300A initialization branches, radio
+  register/FIFO access and individual Ecowitt sensor receive handlers before
+  shared-reading aggregation. This is promising for preserving packet ownership;
+  the fitted chip, board wiring and flash protections remain unverified. Detailed
+  addresses and evidence remain in the local firmware-analysis findings. This is
+  exploratory research, not a decision to replace firmware or change the integration.
+
 - [Ecowitt official documentation index](https://www.ecowitt.com/api/quickstart/product?id=281):
   lists the local HTTP and TCP specifications and the TCP maintenance notice.
   This index is for WN1980; it does not establish the user's gateway model.
