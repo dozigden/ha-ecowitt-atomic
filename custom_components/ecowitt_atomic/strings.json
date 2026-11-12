@@ -148,6 +148,9 @@
       "capacitor_voltage": {
         "name": "Capacitor voltage"
       },
+      "voltage": {
+        "name": "Voltage"
+      },
       "firmware_version": {
         "name": "Firmware version"
       }

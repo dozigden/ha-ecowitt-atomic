@@ -16,4 +16,5 @@ GATEWAY_NAME = "gateway_name"
 RADIO_ID = "radio_id"
 BATTERY = "battery"
 RSSI = "rssi"
+VOLTAGE = "voltage"
 LOGGER = logging.getLogger(__package__)

@@ -39,6 +39,27 @@ directory is excluded from Git; keep shared project notes free of those details.
   independent client captures and unchanged parsed data. The user approved
   committing and pushing the changes on 2026-11-12.
 
+## Channel voltage diagnostics — 2026-11-12
+
+- Added `voltage` from live `ch_soil` and `ch_temp` records using their existing
+  channel/metadata/radio-ID joins. The user confirmed these should be diagnostic
+  sensors. One shared Voltage capability uses the existing voltage parser,
+  volts, measurement state class and two-decimal display precision. Parsed
+  diagnostic downloads include the values too.
+- Voltage discovery is independent of moisture/temperature availability and
+  Ecowitt sensor model. Missing or ambiguous ownership creates no voltage
+  reading. Missing/invalid values become unknown after discovery, and entities
+  retain their identities across reload. Zero volts is valid. Generic piezo
+  voltage remains excluded; no new field groups or ownership guesses were added.
+- All 439 tests, Ruff, formatting, strict mypy and packaging/translation checks
+  pass. A disposable HA instance against GW3000A V1.2.5 verified eight voltage
+  entities (seven soil channels and one standalone temperature channel), 14
+  devices and 98 entities overall. Refresh and reload passed; the timestamped
+  report is recorded in local infrastructure notes. Subsequently started
+  persistent development HA at the user's request for visual review; frontend
+  readiness passed with the current source mounted. The user confirmed visual
+  review passed and approved committing the changes on 2026-11-12.
+
 ## New gateway inspection — 2026-11-03
 
 - A new gateway reports **GW3000A V1.2.5**. Read-only requests to
@@ -95,6 +116,22 @@ directory is excluded from Git; keep shared project notes free of those details.
 - The user subsequently shelved the extra rain-total investigation on
   2026-11-08. Resume when GW3000A is available and rainfall provides changing
   values for comparison. Story #16 remains Todo, moved below active priorities.
+- **2026-11-12:** GW3000A is reachable again and still reports V1.2.5. A fresh
+  polling batch through the current API client and reading parser succeeded
+  across all nine endpoints/pages, discovering 13 registered Ecowitt sensors
+  and 22 gateway readings. Piezo `0x14` remains present at 0.0 mm; all other
+  reported piezo rain totals and rate are also zero, so this capture does not
+  resolve its meaning. The timestamped raw batch is saved locally; see the
+  infrastructure notes. No gateway settings or HA configuration were changed.
+- Mapping audit of that batch: unmapped live values include `ch_soil[].voltage`
+  on all seven channels, `ch_temp[].voltage` on channel 1, generic piezo
+  `voltage`, piezo `0x14` and the `debug` fields. Soil/temperature voltages have
+  the same explicit channel/metadata/registration ownership links as their
+  mapped readings; generic piezo voltage remains unattributed and excluded.
+  `get_cli_soilad.nowAd` is also not exposed; calibration values/offsets and
+  low-level status fields remain unused. Live `battery` fields are not separate
+  sources because battery entities use registration `batt`. Replaying the saved
+  batch confirms WS85 capacitor voltage and firmware already map successfully.
 
 ## Confirmed direction
 

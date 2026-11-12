@@ -8,6 +8,7 @@ from .const import (
     RSSI,
     SOIL_MOISTURE,
     TEMPERATURE,
+    VOLTAGE,
 )
 from .mapping_engine import (
     ChannelRadioJoin,
@@ -44,7 +45,10 @@ SOIL_MOISTURE_MAPPING = MappingRule(
         metadata_channel="ch",
         metadata_radio_id="id",
     ),
-    readings=(FieldReading("humidity", SOIL_MOISTURE, parse_percentage),),
+    readings=(
+        FieldReading("humidity", SOIL_MOISTURE, parse_percentage),
+        FieldReading("voltage", VOLTAGE, parse_voltage),
+    ),
     name_field="name",
 )
 
@@ -71,7 +75,10 @@ TEMPERATURE_MAPPING = MappingRule(
         metadata_channel="channel",
         metadata_radio_id="id",
     ),
-    readings=(UnitFieldReading("temp", TEMPERATURE, "unit", parse_temperature),),
+    readings=(
+        UnitFieldReading("temp", TEMPERATURE, "unit", parse_temperature),
+        FieldReading("voltage", VOLTAGE, parse_voltage),
+    ),
     name_field="name",
 )
 

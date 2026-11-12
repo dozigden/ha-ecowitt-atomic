@@ -42,7 +42,7 @@ async def test_temperature_discovery_and_retention(
     unique_id = f"{MAC}::847::temperature"
     assert device is not None
     assert entity_registry.async_get_entity_id("sensor", DOMAIN, unique_id) is None
-    assert len(er.async_entries_for_device(entity_registry, device.id)) == 2
+    assert len(er.async_entries_for_device(entity_registry, device.id)) == 3
 
     for value, unit, expected in [("32", "F", "0.0"), ("-2.5", "C", "-2.5")]:
         live_payload["ch_temp"][0].update(temp=value, unit=unit)
@@ -65,7 +65,12 @@ async def test_temperature_discovery_and_retention(
         assert state.attributes["unit_of_measurement"] == "°C"
     assert {
         e.unique_id for e in er.async_entries_for_device(entity_registry, device.id)
-    } == {unique_id, f"{MAC}::847::gateway_name", f"{MAC}::847::radio_id"}
+    } == {
+        unique_id,
+        f"{MAC}::847::gateway_name",
+        f"{MAC}::847::radio_id",
+        f"{MAC}::847::voltage",
+    }
     assert (
         entity_registry.async_get_entity_id("sensor", DOMAIN, f"{MAC}::31::temperature")
         is None

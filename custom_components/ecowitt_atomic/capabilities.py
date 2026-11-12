@@ -28,6 +28,7 @@ from .const import (
     RSSI,
     SOIL_MOISTURE,
     TEMPERATURE,
+    VOLTAGE,
 )
 
 GATEWAY_SENSOR_DESCRIPTIONS = (
@@ -76,6 +77,16 @@ class AtomicSensorDescription(SensorEntityDescription):
 SENSOR_DESCRIPTIONS = {
     description.key: description
     for description in (
+        AtomicSensorDescription(
+            key=VOLTAGE,
+            translation_key="voltage",
+            device_class=SensorDeviceClass.VOLTAGE,
+            native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+            state_class=SensorStateClass.MEASUREMENT,
+            suggested_display_precision=2,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            include_in_diagnostics=True,
+        ),
         AtomicSensorDescription(
             key="capacitor_voltage",
             translation_key="capacitor_voltage",
