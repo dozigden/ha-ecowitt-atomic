@@ -1084,9 +1084,12 @@ building an expression language or implementing speculative rain attribution.
 ## Remaining work
 
 - Singleton named-property diagnostics are implemented and reviewed (story #17).
-  Generic voltage was excluded by the user. Extra rain total #16 is deferred
-  pending GW3000A availability and rainfall. Broader unmapped readings are tracked in
-  #18–#27; their presence in documentation does not establish hardware support.
+  Channel-linked voltage diagnostics are implemented and visually reviewed too.
+  On 2026-11-12 the user deferred the remaining unmapped values: generic piezo
+  voltage, extra rain field `0x14`, soil `nowAd`, gateway debug fields, and other
+  status/calibration fields. No further mapping work is planned for these now,
+  even though GW3000A is available again. Broader unmapped readings are tracked
+  in #18–#27; their presence in documentation does not establish hardware support.
 - Consolidated testing and local deployment review remains open as story #6.
   Existing setup/develop/reset/smoke scripts and lifecycle coverage are in use;
   the earlier prerequisite ordering has been overtaken by implemented readings.
