@@ -44,6 +44,15 @@ class EcowittSensorData:
 
 
 @dataclass(frozen=True)
+class RawApiBatch:
+    """Decoded responses from the latest finished polling attempt."""
+
+    captured_at: str
+    complete: bool
+    responses: dict[str, object]
+
+
+@dataclass(frozen=True)
 class GatewayReadings:
     """Current gateway and attributed Ecowitt sensor readings."""
 

@@ -78,4 +78,5 @@ def mock_api(live_payload):
         client.async_get_live_data.return_value = live_payload
         client.async_get_registrations.return_value = []
         client.async_get_channel_metadata.return_value = []
+        client.capture_responses.return_value.__enter__.return_value = {}
         yield client

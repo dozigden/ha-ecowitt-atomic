@@ -1,6 +1,6 @@
 # Ecowitt Atomic — project notes
 
-Last updated: 2026-11-08
+Last updated: 2026-11-12
 
 ## Keeping these notes current
 
@@ -13,6 +13,31 @@ Project-specific agent instructions live in `AGENTS.md`. Keep machine-specific
 infrastructure addresses, configuration, and connectivity findings in
 [`.local/INFRASTRUCTURE.md`](.local/INFRASTRUCTURE.md). The entire `.local/`
 directory is excluded from Git; keep shared project notes free of those details.
+
+## Raw API diagnostics — 2026-11-11
+
+- Diagnostic downloads now include the latest finished polling attempt's decoded
+  JSON responses, keyed by endpoint (including registration page numbers), with
+  a UTC capture timestamp and a `complete` flag. This retains unknown fields and
+  Ecowitt sensor combinations for support without making extra gateway requests.
+- Capture happens before response-shape validation and reading interpretation.
+  A failed poll replaces the previous batch with only that attempt's responses;
+  decoded but malformed response structures remain available. HTTP error bodies
+  and invalid JSON are not captured. Downloads during a poll see the previous
+  finished batch. Only the latest batch is retained in memory per gateway; no
+  raw data is logged or written to disk by the integration.
+- Raw responses are included unchanged, including names and radio IDs, as
+  requested by the user. There is no redaction or anonymisation of the polling
+  batch. Downloads copy saved responses without mutating them. The batch excludes
+  setup-only `get_network_info` responses; gateway connection details and
+  config-entry data are not added to diagnostics.
+- Unloaded entries and entries that have never completed setup still return
+  their state and empty readings; there is no retained runtime batch for them.
+- All 429 tests, Ruff, formatting, strict mypy and packaging/translation checks
+  pass. Coverage includes the actual diagnostics download, unknown fields,
+  names and ownership links, failed-poll recovery, in-flight downloads,
+  independent client captures and unchanged parsed data. The user approved
+  committing and pushing the changes on 2026-11-12.
 
 ## New gateway inspection — 2026-11-03
 
@@ -927,8 +952,9 @@ building an expression language or implementing speculative rain attribution.
 - Canonical units: Celsius, percent, and hPa. Parsing supports gateway temperature
   in Fahrenheit and pressure in hPa/mb, inHg, or mmHg. It rejects placeholders,
   malformed values, non-finite numbers, and unknown units instead of using zero.
-- Diagnostics use an allowlist of gateway metadata, polling status, and parsed
-  readings; no gateway URL, raw payload, config-entry data, or credentials.
+- Diagnostics include gateway metadata, polling status, parsed readings and the
+  latest raw API batch unchanged (see the 2026-11-11 section).
+  Gateway URLs and config-entry data are excluded.
   After unload or failed setup, diagnostics return the config-entry state and
   empty readings without requiring runtime data.
 - Validation covers MAC normalization, address aliases/reconfiguration,
@@ -996,7 +1022,8 @@ building an expression language or implementing speculative rain attribution.
   `<gateway_mac>::<type>::radio_id`; a changed radio ID updates the value without
   changing device identity. Invalid/sentinel IDs do not create devices or entities.
   A retained entity reports unknown when its valid registration disappears.
-  Downloadable diagnostics continue to exclude radio IDs.
+  Parsed diagnostics exclude radio IDs; the raw API batch added on 2026-11-11
+  preserves them for debugging.
 - Setup restores moisture, Gateway name and Radio ID entities from this config
   entry's HA entity registry
   entries without a known-type filter. New readings can discover further

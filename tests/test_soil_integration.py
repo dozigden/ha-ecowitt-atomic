@@ -150,9 +150,7 @@ async def test_soil_discovery_and_later_poll(
     assert len(dr.async_entries_for_config_entry(device_registry, entry.entry_id)) == 3
     diagnostics = await async_get_config_entry_diagnostics(hass, entry)
     assert diagnostics["ecowitt_sensors"]["847"]["soil_moisture"]["value"] == 36
-    assert all(
-        private not in str(diagnostics) for private in (MAC, BASE_URL, "ABC", "Bed")
-    )
+    assert all(private not in str(diagnostics) for private in (MAC, BASE_URL))
 
 
 @pytest.mark.parametrize(

@@ -132,6 +132,29 @@ async def test_http_api(hass, aioclient_mock, live_payload):
     assert aioclient_mock.call_count == 7
 
 
+async def test_response_capture_is_isolated(hass, aioclient_mock, live_payload):
+    """Keep captures per client and independent of later parsing or requests."""
+    client = EcowittApiClient(BASE_URL, async_get_clientsession(hass))
+    other = EcowittApiClient("http://other.example", async_get_clientsession(hass))
+    aioclient_mock.get(f"{BASE_URL}/get_livedata_info", json=live_payload)
+    aioclient_mock.get("http://other.example/get_livedata_info", json={"other": True})
+    aioclient_mock.get(f"{BASE_URL}/get_cli_soilad", json=[])
+    with (
+        client.capture_responses() as responses,
+        other.capture_responses() as other_responses,
+    ):
+        parsed = await client.async_get_live_data()
+        await other.async_get_live_data()
+        parsed["wh25"][0]["intemp"] = "changed after capture"
+    await client.async_get_channel_metadata("get_cli_soilad")
+    assert responses == {"get_livedata_info": live_payload}
+    assert other_responses == {"get_livedata_info": {"other": True}}
+    with client.capture_responses() as next_responses:
+        await client.async_get_channel_metadata("get_cli_soilad")
+    assert next_responses == {"get_cli_soilad": []}
+    assert responses == {"get_livedata_info": live_payload}
+
+
 async def test_registration_client_preserves_api_records(hass, aioclient_mock):
     """Pagination must not filter slots or interpret identities and readings."""
     first_page = [{"type": "14", "id": "FFFFFFFF", "name": "Unreceived"}]

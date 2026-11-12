@@ -1,5 +1,8 @@
 """Ecowitt local HTTP/JSON API."""
 
+from collections.abc import Iterator
+from contextlib import contextmanager
+from copy import deepcopy
 from http import HTTPStatus
 import json
 import re
@@ -68,6 +71,17 @@ class EcowittApiClient:
         """Bind a gateway address to the shared session."""
         self.base_url = normalize_base_url(base_url)
         self._session = session
+        self._captured_responses: dict[str, object] | None = None
+
+    @contextmanager
+    def capture_responses(self) -> Iterator[dict[str, object]]:
+        """Collect decoded responses for one poll, before format validation."""
+        responses: dict[str, object] = {}
+        self._captured_responses = responses
+        try:
+            yield responses
+        finally:
+            self._captured_responses = None
 
     async def _get(self, endpoint: str) -> object:
         """Do not follow redirects or include response data in errors."""
@@ -87,6 +101,8 @@ class EcowittApiClient:
             UnicodeError,
         ) as err:
             raise GatewayError("Could not read gateway JSON") from err
+        if self._captured_responses is not None:
+            self._captured_responses[endpoint] = deepcopy(payload)
         return payload
 
     async def _get_object(self, endpoint: str) -> dict[str, object]:

@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .api import EcowittApiClient, GatewayError
 from .const import DOMAIN, LOGGER, POLL_INTERVAL
 from .gateway import async_read_gateway
-from .models import GatewayReadings
+from .models import GatewayReadings, RawApiBatch
 
 if TYPE_CHECKING:
     from .data import AtomicConfigEntry
@@ -31,9 +32,17 @@ class GatewayCoordinator(DataUpdateCoordinator[GatewayReadings]):
             update_interval=POLL_INTERVAL,
         )
         self.client = client
+        self.raw_api: RawApiBatch | None = None
 
     async def _async_update_data(self) -> GatewayReadings:
-        try:
-            return await async_read_gateway(self.client)
-        except GatewayError as err:
-            raise UpdateFailed(str(err)) from err
+        captured_at = dt_util.utcnow().isoformat()
+        complete = False
+        with self.client.capture_responses() as responses:
+            try:
+                readings = await async_read_gateway(self.client)
+                complete = True
+                return readings
+            except GatewayError as err:
+                raise UpdateFailed(str(err)) from err
+            finally:
+                self.raw_api = RawApiBatch(captured_at, complete, responses)
